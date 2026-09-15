@@ -10,7 +10,7 @@
 
     <name>zzyl</name>
     <url>http://www.ruoyi.vip</url>
-    <description>中州养老</description>
+    <description>美食分享平台</description>
     
     <properties>
         <zzyl.version>3.8.8</zzyl.version>
@@ -147,13 +147,6 @@
                 <version>${kaptcha.version}</version>
             </dependency>
 
-            <!-- 定时任务-->
-            <dependency>
-                <groupId>com.zzyl</groupId>
-                <artifactId>zzyl-quartz</artifactId>
-                <version>${zzyl.version}</version>
-            </dependency>
-
             <!-- 代码生成-->
             <dependency>
                 <groupId>com.zzyl</groupId>
@@ -175,6 +168,13 @@
                 <version>${zzyl.version}</version>
             </dependency>
 
+            <!-- 系统模块-->
+            <dependency>
+                <groupId>com.zzyl</groupId>
+                <artifactId>zzyl-serve</artifactId>
+                <version>${zzyl.version}</version>
+            </dependency>
+
             <!-- 通用工具-->
             <dependency>
                 <groupId>com.zzyl</groupId>
@@ -189,9 +189,9 @@
         <module>zzyl-admin</module>
         <module>zzyl-framework</module>
         <module>zzyl-system</module>
-        <module>zzyl-quartz</module>
         <module>zzyl-generator</module>
         <module>zzyl-common</module>
+        <module>zzyl-serve</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -49,16 +49,16 @@
             <artifactId>zzyl-framework</artifactId>
         </dependency>
 
-        <!-- 定时任务-->
-        <dependency>
-            <groupId>com.zzyl</groupId>
-            <artifactId>zzyl-quartz</artifactId>
-        </dependency>
-
         <!-- 代码生成-->
         <dependency>
             <groupId>com.zzyl</groupId>
             <artifactId>zzyl-generator</artifactId>
+        </dependency>
+
+        <!-- 美食分享平台业务模块-->
+        <dependency>
+            <groupId>com.zzyl</groupId>
+            <artifactId>zzyl-serve</artifactId>
         </dependency>
 
     </dependencies>
