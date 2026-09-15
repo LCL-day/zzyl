@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzyl.serve.mapper.AppFoodMapper">
+
+    <resultMap type="com.zzyl.serve.vo.FoodAppVo" id="FoodAppVoResult">
+        <result property="id"             column="id"             />
+        <result property="categoryId"     column="category_id"    />
+        <result property="categoryName"   column="category_name"  />
+        <result property="title"          column="title"          />
+        <result property="image"          column="image"          />
+        <result property="description"    column="description"    />
+        <result property="content"        column="content"        />
+        <result property="likeCount"      column="like_count"     />
+        <result property="favoriteCount"  column="favorite_count" />
+        <result property="commentCount"   column="comment_count"  />
+        <result property="status"         column="status"         />
+        <result property="authorName"     column="author_name"    />
+        <result property="createTime"     column="create_time"    />
+        <result property="liked"          column="liked"          />
+        <result property="favorited"      column="favorited"      />
+    </resultMap>
+
+    <resultMap type="com.zzyl.serve.vo.CommentVo" id="CommentVoResult">
+        <result property="id"              column="id"               />
+        <result property="foodId"          column="food_id"          />
+        <result property="foodTitle"       column="food_title"       />
+        <result property="foodImage"       column="food_image"       />
+        <result property="userId"          column="user_id"          />
+        <result property="nickName"        column="nick_name"        />
+        <result property="avatar"          column="avatar"           />
+        <result property="content"         column="content"          />
+        <result property="parentId"        column="parent_id"        />
+        <result property="parentContent"   column="parent_content"   />
+        <result property="parentNickName"  column="parent_nick_name" />
+        <result property="createTime"      column="create_time"      />
+    </resultMap>
+
+    <sql id="appFoodVo">
+        select fi.id, fi.category_id, fc.name as category_name, fi.title, fi.image, fi.description,
+               fi.content, fi.like_count, fi.favorite_count, fi.comment_count, fi.status,
+               coalesce(nullif(u.nick_name, ''), fi.create_by) as author_name, fi.create_time,
+               (select count(1) from food_like fl where fl.food_id = fi.id and fl.user_id = #{userId}) as liked,
+               (select count(1) from food_favorite ff where ff.food_id = fi.id and ff.user_id = #{userId}) as favorited
+        from food_info fi
+        left join food_category fc on fc.id = fi.category_id
+        left join sys_user u on u.user_name = fi.create_by
+    </sql>
+
+    <select id="selectAppFoodList" resultMap="FoodAppVoResult">
+        <include refid="appFoodVo"/>
+        <where>
+            fi.status = '0'
+            <if test="title != null and title != ''">
+                and (fi.title like concat('%', #{title}, '%') or fi.description like concat('%', #{title}, '%'))
+            </if>
+            <if test="categoryId != null">
+                and fi.category_id = #{categoryId}
+            </if>
+        </where>
+        order by fi.create_time desc, fi.id desc
+    </select>
+
+    <select id="selectAppFoodById" resultMap="FoodAppVoResult">
+        <include refid="appFoodVo"/>
+        where fi.id = #{id}
+    </select>
+
+    <select id="selectMyFavoriteFoodList" resultMap="FoodAppVoResult">
+        select fi.id, fi.category_id, fc.name as category_name, fi.title, fi.image, fi.description,
+               fi.content, fi.like_count, fi.favorite_count, fi.comment_count, fi.status,
+               coalesce(nullif(u.nick_name, ''), fi.create_by) as author_name, fi.create_time,
+               (select count(1) from food_like fl where fl.food_id = fi.id and fl.user_id = #{userId}) as liked,
+               1 as favorited
+        from food_favorite ff
+        inner join food_info fi on fi.id = ff.food_id
+        left join food_category fc on fc.id = fi.category_id
+        left join sys_user u on u.user_name = fi.create_by
+        where ff.user_id = #{userId}
+        order by ff.create_time desc, ff.id desc
+    </select>
+    <select id="selectCommentVoList" resultMap="CommentVoResult">
+        select c.id, c.food_id, c.user_id, u.nick_name, u.avatar, c.content, c.parent_id,
+               p.content as parent_content, pu.nick_name as parent_nick_name, c.create_time
+        from food_comment c
+        left join sys_user u on u.user_id = c.user_id
+        left join food_comment p on p.id = c.parent_id
+        left join sys_user pu on pu.user_id = p.user_id
+        where c.food_id = #{foodId} and c.status = '0'
+        order by c.create_time asc, c.id asc
+    </select>
+
+    <select id="selectMyComments" resultMap="CommentVoResult">
+        select c.id, c.food_id, fi.title as food_title, fi.image as food_image,
+               c.user_id, u.nick_name, u.avatar, c.content, c.parent_id,
+               p.content as parent_content, pu.nick_name as parent_nick_name, c.create_time
+        from food_comment c
+        left join food_info fi on fi.id = c.food_id
+        left join sys_user u on u.user_id = c.user_id
+        left join food_comment p on p.id = c.parent_id
+        left join sys_user pu on pu.user_id = p.user_id
+        where c.user_id = #{userId}
+        order by c.create_time desc, c.id desc
+    </select>
+
+    <select id="selectReceivedComments" resultMap="CommentVoResult">
+        select c.id, c.food_id, fi.title as food_title, fi.image as food_image,
+               c.user_id, u.nick_name, u.avatar, c.content, c.parent_id,
+               p.content as parent_content, pu.nick_name as parent_nick_name, c.create_time
+        from food_comment c
+        inner join food_info fi on fi.id = c.food_id and fi.create_by = #{userName}
+        left join sys_user u on u.user_id = c.user_id
+        left join food_comment p on p.id = c.parent_id
+        left join sys_user pu on pu.user_id = p.user_id
+        where c.user_id != (select user_id from sys_user where user_name = #{userName} limit 1)
+        order by c.create_time desc, c.id desc
+    </select>
+
+    <select id="countMyPublished" resultType="int">
+        select count(1) from food_info where create_by = #{userName}
+    </select>
+
+    <select id="countMyFavorite" resultType="int">
+        select count(1) from food_favorite where user_id = #{userId}
+    </select>
+
+    <select id="countMyComment" resultType="int">
+        select count(1) from food_comment where user_id = #{userId}
+    </select>
+
+    <select id="countReceivedComment" resultType="int">
+        select count(1) from food_comment c
+        inner join food_info fi on fi.id = c.food_id and fi.create_by = #{userName}
+        where c.user_id != (select user_id from sys_user where user_name = #{userName} limit 1)
+    </select>
+
+</mapper>

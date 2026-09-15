@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzyl.serve.mapper.FoodCommentMapper">
+    
+    <resultMap type="FoodComment" id="FoodCommentResult">
+        <result property="id"    column="id"    />
+        <result property="foodId"    column="food_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="content"    column="content"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="likeCount"    column="like_count"    />
+        <result property="status"    column="status"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="foodTitle"    column="food_title"    />
+    </resultMap>
+
+    <sql id="selectFoodCommentVo">
+        select fc.id, fc.food_id, fc.user_id, fc.content, fc.parent_id, fc.like_count, fc.status, fc.create_by, fc.update_by, fc.remark, fc.create_time, fc.update_time, fi.title as food_title
+        from food_comment fc
+        left join food_info fi on fc.food_id = fi.id
+    </sql>
+
+    <select id="selectFoodCommentList" parameterType="FoodComment" resultMap="FoodCommentResult">
+        <include refid="selectFoodCommentVo"/>
+        <where>  
+            <if test="foodId != null "> and fc.food_id = #{foodId}</if>
+            <if test="userId != null "> and fc.user_id = #{userId}</if>
+            <if test="content != null  and content != ''"> and fc.content like concat('%', #{content}, '%')</if>
+            <if test="status != null  and status != ''"> and fc.status = #{status}</if>
+            <if test="foodTitle != null  and foodTitle != ''"> and fi.title like concat('%', #{foodTitle}, '%')</if>
+        </where>
+        order by fc.create_time desc
+    </select>
+    
+    <select id="selectFoodCommentById" parameterType="Long" resultMap="FoodCommentResult">
+        <include refid="selectFoodCommentVo"/>
+        where fc.id = #{id}
+    </select>
+
+    <insert id="insertFoodComment" parameterType="FoodComment" useGeneratedKeys="true" keyProperty="id">
+        insert into food_comment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="foodId != null">food_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="content != null">content,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="likeCount != null">like_count,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="foodId != null">#{foodId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="content != null">#{content},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="likeCount != null">#{likeCount},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateFoodComment" parameterType="FoodComment">
+        update food_comment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="foodId != null">food_id = #{foodId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="likeCount != null">like_count = #{likeCount},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteFoodCommentById" parameterType="Long">
+        delete from food_comment where id = #{id}
+    </delete>
+
+    <delete id="deleteFoodCommentByIds" parameterType="String">
+        delete from food_comment where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

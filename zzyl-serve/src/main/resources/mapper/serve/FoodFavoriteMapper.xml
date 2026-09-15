@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzyl.serve.mapper.FoodFavoriteMapper">
+    
+    <resultMap type="FoodFavorite" id="FoodFavoriteResult">
+        <result property="id"    column="id"    />
+        <result property="foodId"    column="food_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="foodTitle"    column="food_title"    />
+    </resultMap>
+
+    <sql id="selectFoodFavoriteVo">
+        select ff.id, ff.food_id, ff.user_id, ff.create_time, fi.title as food_title
+        from food_favorite ff
+        left join food_info fi on ff.food_id = fi.id
+    </sql>
+
+    <select id="selectFoodFavoriteList" parameterType="FoodFavorite" resultMap="FoodFavoriteResult">
+        <include refid="selectFoodFavoriteVo"/>
+        <where>  
+            <if test="foodId != null "> and ff.food_id = #{foodId}</if>
+            <if test="userId != null "> and ff.user_id = #{userId}</if>
+            <if test="foodTitle != null  and foodTitle != ''"> and fi.title like concat('%', #{foodTitle}, '%')</if>
+        </where>
+        order by ff.create_time desc
+    </select>
+    
+    <select id="selectFoodFavoriteById" parameterType="Long" resultMap="FoodFavoriteResult">
+        <include refid="selectFoodFavoriteVo"/>
+        where ff.id = #{id}
+    </select>
+
+    <insert id="insertFoodFavorite" parameterType="FoodFavorite" useGeneratedKeys="true" keyProperty="id">
+        insert into food_favorite (food_id, user_id, create_time)
+        values (#{foodId}, #{userId}, #{createTime})
+    </insert>
+
+    <delete id="deleteFoodFavoriteById" parameterType="Long">
+        delete from food_favorite where id = #{id}
+    </delete>
+
+    <delete id="deleteFoodFavoriteByIds" parameterType="String">
+        delete from food_favorite where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

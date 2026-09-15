@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzyl.serve.mapper.FoodLikeMapper">
+    
+    <resultMap type="FoodLike" id="FoodLikeResult">
+        <result property="id"    column="id"    />
+        <result property="foodId"    column="food_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="foodTitle"    column="food_title"    />
+    </resultMap>
+
+    <sql id="selectFoodLikeVo">
+        select fl.id, fl.food_id, fl.user_id, fl.create_time, fi.title as food_title
+        from food_like fl
+        left join food_info fi on fl.food_id = fi.id
+    </sql>
+
+    <select id="selectFoodLikeList" parameterType="FoodLike" resultMap="FoodLikeResult">
+        <include refid="selectFoodLikeVo"/>
+        <where>  
+            <if test="foodId != null "> and fl.food_id = #{foodId}</if>
+            <if test="userId != null "> and fl.user_id = #{userId}</if>
+            <if test="foodTitle != null  and foodTitle != ''"> and fi.title like concat('%', #{foodTitle}, '%')</if>
+        </where>
+        order by fl.create_time desc
+    </select>
+    
+    <select id="selectFoodLikeById" parameterType="Long" resultMap="FoodLikeResult">
+        <include refid="selectFoodLikeVo"/>
+        where fl.id = #{id}
+    </select>
+
+    <insert id="insertFoodLike" parameterType="FoodLike" useGeneratedKeys="true" keyProperty="id">
+        insert into food_like (food_id, user_id, create_time)
+        values (#{foodId}, #{userId}, #{createTime})
+    </insert>
+
+    <delete id="deleteFoodLikeById" parameterType="Long">
+        delete from food_like where id = #{id}
+    </delete>
+
+    <delete id="deleteFoodLikeByIds" parameterType="String">
+        delete from food_like where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
